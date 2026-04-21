@@ -2,8 +2,11 @@
 __pycache__/
 *.pyc
 .DS_Store
+/summary.json
+/benchmark_results.json
 reports/*
 !reports/summary.json
 !reports/benchmark_results.json
+!reports/GROUP_REPORT.md
 data/legacy/
 .idea/
