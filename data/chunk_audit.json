@@ -1,0 +1,131 @@
+{
+  "generated_at": "2026-04-21T08:17:44.306981+00:00",
+  "overall": {
+    "count": 29,
+    "min_chars": 101,
+    "median_chars": 281,
+    "avg_chars": 310.1,
+    "max_chars": 712
+  },
+  "largest_chunks_in_corpus": [
+    {
+      "chunk_id": "hr_leave_policy_0",
+      "text_char_count": 712,
+      "legacy_export": "day08_rag_lab",
+      "source": "hr/leave-policy-2026.pdf",
+      "section": "Phần 1: Các loại nghỉ phép"
+    },
+    {
+      "chunk_id": "sla_p1_2026_1",
+      "text_char_count": 641,
+      "legacy_export": "day08_rag_lab",
+      "source": "support/sla-p1-2026.pdf",
+      "section": "Phần 2: SLA theo mức độ ưu tiên"
+    },
+    {
+      "chunk_id": "access_control_sop_1",
+      "text_char_count": 620,
+      "legacy_export": "day08_rag_lab",
+      "source": "it/access-control-sop.md",
+      "section": "Section 2: Phân cấp quyền truy cập"
+    },
+    {
+      "chunk_id": "sla_p1_2026_0",
+      "text_char_count": 529,
+      "legacy_export": "day08_rag_lab",
+      "source": "support/sla-p1-2026.pdf",
+      "section": "Phần 1: Định nghĩa mức độ ưu tiên"
+    },
+    {
+      "chunk_id": "it_helpdesk_faq_0",
+      "text_char_count": 489,
+      "legacy_export": "day08_rag_lab",
+      "source": "support/helpdesk-faq.md",
+      "section": "Section 1: Tài khoản và mật khẩu"
+    },
+    {
+      "chunk_id": "sla_p1_2026_2",
+      "text_char_count": 458,
+      "legacy_export": "day08_rag_lab",
+      "source": "support/sla-p1-2026.pdf",
+      "section": "Phần 3: Quy trình xử lý sự cố P1"
+    },
+    {
+      "chunk_id": "access_control_sop_3",
+      "text_char_count": 431,
+      "legacy_export": "day08_rag_lab",
+      "source": "it/access-control-sop.md",
+      "section": "Section 4: Escalation khi cần thay đổi quyền hệ thống"
+    },
+    {
+      "chunk_id": "hr_leave_policy_1",
+      "text_char_count": 382,
+      "legacy_export": "day08_rag_lab",
+      "source": "hr/leave-policy-2026.pdf",
+      "section": "Phần 2: Quy trình xin nghỉ phép"
+    },
+    {
+      "chunk_id": "it_helpdesk_faq_1",
+      "text_char_count": 368,
+      "legacy_export": "day08_rag_lab",
+      "source": "support/helpdesk-faq.md",
+      "section": "Section 2: VPN và kết nối từ xa"
+    },
+    {
+      "chunk_id": "policy_refund_v4_3",
+      "text_char_count": 343,
+      "legacy_export": "day08_rag_lab",
+      "source": "policy/refund-v4.pdf",
+      "section": "Điều 4: Quy trình xử lý yêu cầu hoàn tiền"
+    }
+  ],
+  "per_export": {
+    "day08_rag_lab": {
+      "count": 29,
+      "min_chars": 101,
+      "median_chars": 281,
+      "avg_chars": 310.1,
+      "max_chars": 712,
+      "collection": "rag_lab",
+      "legacy_day": "day08",
+      "sample_longest_chunks": [
+        {
+          "chunk_id": "hr_leave_policy_0",
+          "text_char_count": 712,
+          "source": "hr/leave-policy-2026.pdf",
+          "section": "Phần 1: Các loại nghỉ phép"
+        },
+        {
+          "chunk_id": "sla_p1_2026_1",
+          "text_char_count": 641,
+          "source": "support/sla-p1-2026.pdf",
+          "section": "Phần 2: SLA theo mức độ ưu tiên"
+        },
+        {
+          "chunk_id": "access_control_sop_1",
+          "text_char_count": 620,
+          "source": "it/access-control-sop.md",
+          "section": "Section 2: Phân cấp quyền truy cập"
+        },
+        {
+          "chunk_id": "sla_p1_2026_0",
+          "text_char_count": 529,
+          "source": "support/sla-p1-2026.pdf",
+          "section": "Phần 1: Định nghĩa mức độ ưu tiên"
+        },
+        {
+          "chunk_id": "it_helpdesk_faq_0",
+          "text_char_count": 489,
+          "source": "support/helpdesk-faq.md",
+          "section": "Section 1: Tài khoản và mật khẩu"
+        }
+      ]
+    }
+  },
+  "notes": [
+    "Chunk size numbers above are measured on text only.",
+    "The old Day 08 chunking config targeted CHUNK_SIZE=400 tokens and CHUNK_OVERLAP=80 tokens, implemented as ~1600 char chunks with ~320 char overlap.",
+    "This audit now uses a single active legacy source to avoid duplicate chunks across days.",
+    "Large JSONL lines previously came mostly from embedding arrays, not from oversized chunk text."
+  ]
+}

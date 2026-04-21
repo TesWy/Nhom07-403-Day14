@@ -1,0 +1,52 @@
+{
+  "generated_at": "2026-04-21T08:17:44.189270+00:00",
+  "documents_root": "D:\\VinUni\\assignments\\Nhom07-403-Day14\\documents",
+  "files": [
+    {
+      "filename": "access_control_sop.txt",
+      "chosen_from_day": "day08",
+      "source_days": [
+        "day08"
+      ],
+      "sha256": "0ecfb266e3bd8d427fe8a47501b0bc442d95a8ed239b02bf1c359662a9925862",
+      "path": "documents\\access_control_sop.txt"
+    },
+    {
+      "filename": "hr_leave_policy.txt",
+      "chosen_from_day": "day08",
+      "source_days": [
+        "day08"
+      ],
+      "sha256": "9acd3fa0a0b4a081283a7b1d85af40b5b5172420cb0b7218b66977b4fd1bcf76",
+      "path": "documents\\hr_leave_policy.txt"
+    },
+    {
+      "filename": "it_helpdesk_faq.txt",
+      "chosen_from_day": "day08",
+      "source_days": [
+        "day08"
+      ],
+      "sha256": "f6e80c01848d3297228de954ad2ac13f8b7561be00f565c17ed9e027371820d3",
+      "path": "documents\\it_helpdesk_faq.txt"
+    },
+    {
+      "filename": "policy_refund_v4.txt",
+      "chosen_from_day": "day08",
+      "source_days": [
+        "day08"
+      ],
+      "sha256": "5934cf9dcf0060f57109d83d8bea25914f38a01f11cc0a12c13b0b45e73186d1",
+      "path": "documents\\policy_refund_v4.txt"
+    },
+    {
+      "filename": "sla_p1_2026.txt",
+      "chosen_from_day": "day08",
+      "source_days": [
+        "day08"
+      ],
+      "sha256": "8c4bfea93b08610c29193a5d12ca38404dc1b727471a82956ab47d633ab06eb9",
+      "path": "documents\\sla_p1_2026.txt"
+    }
+  ],
+  "collisions": []
+}

@@ -1,0 +1,47 @@
+{
+  "generated_at": "2026-04-21T08:17:44.306981+00:00",
+  "repo_root": "D:\\VinUni\\assignments\\Nhom07-403-Day14",
+  "copied_assets": [
+    {
+      "day": "day08",
+      "copied": [
+        "data\\legacy\\day08\\docs",
+        "data\\legacy\\day08\\chroma_db"
+      ]
+    }
+  ],
+  "exports": [
+    {
+      "name": "day08_rag_lab",
+      "day": "day08",
+      "collection": "rag_lab",
+      "chroma_path": "D:\\VinUni\\assignments\\Day_08_RAG\\lab\\chroma_db",
+      "copied_chroma_path": "data\\legacy\\day08\\chroma_db",
+      "rows_exported": 29,
+      "embedding_dimensions": [
+        1536
+      ]
+    }
+  ],
+  "summary": {
+    "storage_mode": "text_and_metadata_with_chroma_refs",
+    "raw_exported_chunks": 29,
+    "unique_chunks_in_corpus": 29,
+    "duplicates_removed": 0,
+    "chunk_id_collisions_reassigned": 0,
+    "chunks_by_legacy_day": {
+      "day08": 29
+    },
+    "embedding_dimensions_in_corpus": {
+      "1536": 29
+    },
+    "collections_with_no_rows": [],
+    "meets_strict_50_chunk_target": false,
+    "notes": [
+      "Embedding vectors are not embedded inside corpus.jsonl; use chroma_ref to retrieve from copied ChromaDB snapshots.",
+      "Only one legacy source is kept active to avoid duplicate docs and duplicate chunks across days."
+    ]
+  },
+  "duplicates": [],
+  "collisions": []
+}
