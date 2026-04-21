@@ -46,6 +46,37 @@ class RetrievalEvaluator:
                 return 1.0 / (i + 1)
         return 0.0
 
+    def calculate_context_precision(self, expected_ids: List[str], retrieved_ids: List[str]) -> float:
+        """
+        Precision của tập context retrieve:
+        relevant_retrieved / total_retrieved
+        """
+        expected = {x for x in expected_ids if x}
+        retrieved = [x for x in dict.fromkeys(retrieved_ids) if x]
+
+        if not expected:
+            return 1.0 if not retrieved else 0.0
+
+        if not retrieved:
+            return 0.0
+
+        relevant_retrieved = sum(1 for doc_id in retrieved if doc_id in expected)
+        return relevant_retrieved / len(retrieved)
+
+    def calculate_context_recall(self, expected_ids: List[str], retrieved_ids: List[str]) -> float:
+        """
+        Recall của tập context retrieve:
+        relevant_retrieved / all_relevant_in_corpus
+        """
+        expected = {x for x in expected_ids if x}
+        retrieved = {x for x in retrieved_ids if x}
+
+        if not expected:
+            return 1.0 if not retrieved else 0.0
+
+        relevant_retrieved = sum(1 for doc_id in expected if doc_id in retrieved)
+        return relevant_retrieved / len(expected)
+
     @staticmethod
     def _get_expected_ids(item: Dict) -> List[str]:
         return (
@@ -85,12 +116,16 @@ class RetrievalEvaluator:
             return {
                 "avg_hit_rate": 0.0,
                 "avg_mrr": 0.0,
+                "avg_context_precision": 0.0,
+                "avg_context_recall": 0.0,
                 "count": 0,
                 "per_case": [],
             }
 
         hit_scores: List[float] = []
         mrr_scores: List[float] = []
+        context_precision_scores: List[float] = []
+        context_recall_scores: List[float] = []
         per_case: List[Dict] = []
 
         for idx, item in enumerate(dataset):
@@ -99,9 +134,13 @@ class RetrievalEvaluator:
 
             hit = self.calculate_hit_rate(expected_ids, retrieved_ids, top_k=3)
             mrr = self.calculate_mrr(expected_ids, retrieved_ids)
+            context_precision = self.calculate_context_precision(expected_ids, retrieved_ids)
+            context_recall = self.calculate_context_recall(expected_ids, retrieved_ids)
 
             hit_scores.append(hit)
             mrr_scores.append(mrr)
+            context_precision_scores.append(context_precision)
+            context_recall_scores.append(context_recall)
             per_case.append(
                 {
                     "index": idx,
@@ -109,6 +148,8 @@ class RetrievalEvaluator:
                     "retrieved_ids": retrieved_ids,
                     "hit_rate": hit,
                     "mrr": mrr,
+                    "context_precision": context_precision,
+                    "context_recall": context_recall,
                 }
             )
 
@@ -116,6 +157,8 @@ class RetrievalEvaluator:
         return {
             "avg_hit_rate": sum(hit_scores) / len(hit_scores),
             "avg_mrr": sum(mrr_scores) / len(mrr_scores),
+            "avg_context_precision": sum(context_precision_scores) / len(context_precision_scores),
+            "avg_context_recall": sum(context_recall_scores) / len(context_recall_scores),
             "count": len(dataset),
             "per_case": per_case,
         }

@@ -1,0 +1,66 @@
+{
+  "metadata": {
+    "version": "Agent_V2_Optimized",
+    "agent_runtime_version": "v2",
+    "total": 85,
+    "timestamp": "2026-04-21 17:44:08",
+    "benchmark_duration_sec": 290.128,
+    "versions_compared": [
+      "Agent_V1_Base",
+      "Agent_V2_Optimized"
+    ]
+  },
+  "metrics": {
+    "avg_score": 4.0588235294117645,
+    "hit_rate": 0.8823529411764706,
+    "mrr": 0.8411764705882353,
+    "context_precision": 0.3294117647058819,
+    "context_recall": 0.8647058823529412,
+    "faithfulness": 0.746923647058824,
+    "relevancy": 0.8319710823529411,
+    "semantic_similarity": 0.8612587764705879,
+    "agreement_rate": 0.8470588235294118,
+    "position_bias_rate": 0.011764705882352941,
+    "avg_latency_sec": 10.89326865882279,
+    "p95_latency_sec": 15.059764799996628,
+    "pass_rate": 0.8,
+    "total_cost_usd": 0.06888662,
+    "cost_per_eval_usd": 0.00081043,
+    "total_tokens": 1833330,
+    "avg_tokens_per_eval": 21568.58823529412
+  },
+  "usage": {
+    "input_tokens": 1812148,
+    "output_tokens": 21182,
+    "total_tokens": 1833330,
+    "total_cost_usd": 0.06888662,
+    "pricing_complete": true,
+    "unpriced_models": []
+  },
+  "regression": {
+    "baseline": "Agent_V1_Base",
+    "candidate": "Agent_V2_Optimized",
+    "v1": {
+      "score": 2.8411764705882354,
+      "hit_rate": 0.023529411764705882,
+      "mrr": 0.023529411764705882,
+      "context_precision": 0.023529411764705882,
+      "context_recall": 0.023529411764705882,
+      "judge_agreement": 0.6264705882352941
+    },
+    "v2": {
+      "score": 4.0588235294117645,
+      "hit_rate": 0.8823529411764706,
+      "mrr": 0.8411764705882353,
+      "context_precision": 0.3294117647058819,
+      "context_recall": 0.8647058823529412,
+      "judge_agreement": 0.8470588235294118
+    },
+    "delta_avg_score": 1.21764706,
+    "delta_hit_rate": 0.85882353,
+    "delta_mrr": 0.81764706,
+    "delta_context_precision": 0.30588235,
+    "delta_context_recall": 0.84117647,
+    "decision": "APPROVE"
+  }
+}
