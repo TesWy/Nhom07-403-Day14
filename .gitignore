@@ -2,5 +2,8 @@
 __pycache__/
 *.pyc
 .DS_Store
+reports/*
+!reports/summary.json
+!reports/benchmark_results.json
 data/legacy/
 .idea/
