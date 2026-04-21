@@ -21,28 +21,41 @@ class MainAgent:
 
     def _load_corpus(self) -> List[Dict[str, str]]:
         """
-        Loads the corpus from data/docs or a default mock corpus if not found.
+        Loads the corpus from data/corpus.jsonl (pre-chunked company policy documents
+        with correct chunk IDs matching the golden_set.jsonl).
+        Falls back to data/chunks/day08_rag_lab.jsonl, then to a minimal mock corpus.
         """
-        docs_path = "data/docs"
-        corpus = []
-        if os.path.exists(docs_path):
-            for file in os.listdir(docs_path):
-                if file.endswith(".txt"):
-                    with open(os.path.join(docs_path, file), "r", encoding="utf-8") as f:
-                        corpus.append({
-                            "chunk_id": f"chunk_{len(corpus):03d}",
-                            "text": f.read(),
-                            "source_doc": file
-                        })
-        
-        # Fallback if no files found
-        if not corpus:
-            corpus = [
-                {"chunk_id": "chunk_000", "text": "AI Evaluation là một quy trình kỹ thuật nhằm đo lường chất lượng hệ thống AI thông qua các chỉ số như Hit Rate, MRR, và LLM Judge.", "source_doc": "intro.txt"},
-                {"chunk_id": "chunk_001", "text": "Hit Rate tính toán tỉ lệ các trường hợp mà tài liệu chính xác được tìm thấy trong Top-K kết quả trả về.", "source_doc": "metrics.txt"},
-                {"chunk_id": "chunk_002", "text": "MRR (Mean Reciprocal Rank) đánh giá thứ hạng của kết quả đúng đầu tiên trong danh sách kết quả tìm kiếm.", "source_doc": "metrics.txt"}
-            ]
-        return corpus
+        # Primary: load from pre-chunked corpus with correct chunk IDs
+        corpus_candidates = [
+            "data/corpus.jsonl",
+            "data/chunks/day08_rag_lab.jsonl",
+        ]
+        for corpus_path in corpus_candidates:
+            if os.path.exists(corpus_path):
+                corpus = []
+                with open(corpus_path, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if not line:
+                            continue
+                        try:
+                            obj = json.loads(line)
+                            corpus.append({
+                                "chunk_id": obj.get("chunk_id", f"chunk_{len(corpus):03d}"),
+                                "text": obj.get("text", obj.get("context", "")),
+                                "source_doc": obj.get("source", obj.get("metadata", {}).get("source", "unknown")),
+                            })
+                        except json.JSONDecodeError:
+                            continue
+                if corpus:
+                    return corpus
+
+        # Last-resort fallback: minimal mock corpus
+        return [
+            {"chunk_id": "chunk_000", "text": "AI Evaluation là một quy trình kỹ thuật nhằm đo lường chất lượng hệ thống AI thông qua các chỉ số như Hit Rate, MRR, và LLM Judge.", "source_doc": "intro.txt"},
+            {"chunk_id": "chunk_001", "text": "Hit Rate tính toán tỉ lệ các trường hợp mà tài liệu chính xác được tìm thấy trong Top-K kết quả trả về.", "source_doc": "metrics.txt"},
+            {"chunk_id": "chunk_002", "text": "MRR (Mean Reciprocal Rank) đánh giá thứ hạng của kết quả đúng đầu tiên trong danh sách kết quả tìm kiếm.", "source_doc": "metrics.txt"},
+        ]
 
     async def query(self, question: str) -> Dict:
         """

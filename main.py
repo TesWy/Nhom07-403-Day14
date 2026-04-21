@@ -5,15 +5,27 @@ import time
 from engine.llm_judge import LLMJudge
 from engine.runner import BenchmarkRunner
 from agent.main_agent import MainAgent
+from engine.retrieval_eval import RetrievalEvaluator
 
 # Giả lập các components Expert
 class ExpertEvaluator:
-    async def score(self, case, resp): 
-        # Giả lập tính toán Hit Rate và MRR
+    def __init__(self):
+        self._eval = RetrievalEvaluator()
+
+    async def score(self, case: dict, resp: dict) -> dict:
+        expected_ids = case.get("expected_retrieval_ids", [])
+        retrieved_ids = resp.get("retrieved_ids", [])
+
+        hit_rate = self._eval.calculate_hit_rate(expected_ids, retrieved_ids)
+        mrr = self._eval.calculate_mrr(expected_ids, retrieved_ids)
+
+        # Faithfulness proxy: reward if at least one relevant doc was retrieved.
+        faithfulness = 1.0 if hit_rate > 0 else 0.5
+
         return {
-            "faithfulness": 0.9, 
-            "relevancy": 0.8,
-            "retrieval": {"hit_rate": 1.0, "mrr": 0.5}
+            "faithfulness": faithfulness,
+            "relevancy": mrr,
+            "retrieval": {"hit_rate": hit_rate, "mrr": mrr},
         }
 
 async def run_benchmark_with_results(agent_version: str):
