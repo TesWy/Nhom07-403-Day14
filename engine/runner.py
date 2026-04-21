@@ -1,10 +1,12 @@
 import asyncio
 import time
-from typing import List, Dict
+from typing import Dict, List
 
 from tqdm.auto import tqdm
 
 from engine.retrieval_eval import RetrievalEvaluator
+from engine.usage import merge_usage_payloads
+
 
 class BenchmarkRunner:
     def __init__(self, agent, evaluator, judge):
@@ -50,7 +52,6 @@ class BenchmarkRunner:
         expected_answer = test_case.get("expected_answer", "")
 
         try:
-            # 1. Gọi Agent
             response = await self.agent.query(question)
         except Exception as exc:
             latency = time.perf_counter() - start_time
@@ -60,12 +61,27 @@ class BenchmarkRunner:
                 "agent_response_meta": {},
                 "retrieved_ids": [],
                 "latency": latency,
-                "ragas": {},
+                "ragas": {
+                    "retrieval": {
+                        "hit_rate": 0.0,
+                        "mrr": 0.0,
+                        "context_precision": 0.0,
+                        "context_recall": 0.0,
+                    }
+                },
                 "judge": {
                     "final_score": 1,
                     "agreement_rate": 0.0,
                     "reasoning": f"Agent query failed: {exc}",
+                    "usage": merge_usage_payloads(),
                 },
+                "position_bias": {
+                    "preferred_when_a_first": "tie",
+                    "preferred_when_b_first": "tie",
+                    "bias_detected": False,
+                    "usage": merge_usage_payloads(),
+                },
+                "usage": {"total": merge_usage_payloads()},
                 "status": "fail",
                 "error": str(exc),
             }
@@ -75,19 +91,36 @@ class BenchmarkRunner:
         retrieved_ids = self._extract_retrieved_ids(response)
         expected_ids = self._extract_expected_ids(test_case)
 
-        # 2. Chạy metrics generation (RAGAS hoặc evaluator tùy biến)
-        ragas_scores = await self._score_generation(test_case, response)
+        generation_scores = await self._score_generation(test_case, response)
+        if not isinstance(generation_scores, dict):
+            generation_scores = {}
 
-        # Bổ sung retrieval metrics nếu evaluator hiện tại chưa trả về.
         retrieval_scores = {
             "hit_rate": self.retrieval_eval.calculate_hit_rate(expected_ids, retrieved_ids, top_k=3),
             "mrr": self.retrieval_eval.calculate_mrr(expected_ids, retrieved_ids),
+            "context_precision": self.retrieval_eval.calculate_context_precision(expected_ids, retrieved_ids),
+            "context_recall": self.retrieval_eval.calculate_context_recall(expected_ids, retrieved_ids),
         }
-        if isinstance(ragas_scores, dict):
-            ragas_scores.setdefault("retrieval", retrieval_scores)
+        generation_scores["retrieval"] = retrieval_scores
 
-        # 3. Chạy Multi-Judge
         judge_result = await self.judge.evaluate_multi_judge(question, answer, expected_answer)
+        position_bias = await self.judge.check_position_bias(
+            response_a=answer,
+            response_b=expected_answer,
+            question=question,
+            ground_truth=expected_answer,
+        )
+
+        agent_usage = (
+            response.get("metadata", {}).get("usage", {})
+            if isinstance(response, dict)
+            else merge_usage_payloads()
+        )
+        total_usage = merge_usage_payloads(
+            agent_usage,
+            judge_result.get("usage"),
+            position_bias.get("usage"),
+        )
 
         return {
             "test_case": question,
@@ -95,14 +128,21 @@ class BenchmarkRunner:
             "agent_response_meta": response.get("metadata", {}) if isinstance(response, dict) else {},
             "retrieved_ids": retrieved_ids,
             "latency": latency,
-            "ragas": ragas_scores,
+            "ragas": generation_scores,
             "judge": judge_result,
-            "status": "fail" if judge_result.get("final_score", 0) < 3 else "pass"
+            "position_bias": position_bias,
+            "usage": {
+                "agent": agent_usage,
+                "judge": judge_result.get("usage", merge_usage_payloads()),
+                "position_bias": position_bias.get("usage", merge_usage_payloads()),
+                "total": total_usage,
+            },
+            "status": "fail" if judge_result.get("final_score", 0) < 3 else "pass",
         }
 
     async def run_all(self, dataset: List[Dict], batch_size: int = 5) -> List[Dict]:
         """
-        Chạy song song bằng asyncio.gather với giới hạn batch_size để không bị Rate Limit.
+        Run concurrent benchmark batches while limiting fanout to avoid rate limits.
         """
         if batch_size <= 0:
             batch_size = 1

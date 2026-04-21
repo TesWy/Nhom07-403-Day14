@@ -5,6 +5,8 @@ from typing import Any, Optional
 from dotenv import load_dotenv
 from openai import AsyncOpenAI
 
+from engine.usage import build_usage_record
+
 
 class LLMProviderAdapter:
     """
@@ -115,13 +117,22 @@ class LLMProviderAdapter:
             )
         return self._bedrock_client
 
+    def get_active_model(self) -> str:
+        if self.provider == "openai":
+            return self.openai_model
+        if self.provider == "anthropic":
+            return self.anthropic_model
+        if self.provider == "gemini":
+            return self.gemini_model
+        return self.bedrock_model
+
     async def _generate_with_openai(
         self,
         prompt: str,
         system_prompt: Optional[str],
         temperature: float,
         max_tokens: int,
-    ) -> str:
+    ) -> dict:
         client = self._get_openai_client()
         response = await client.chat.completions.create(
             model=self.openai_model,
@@ -132,7 +143,17 @@ class LLMProviderAdapter:
             temperature=temperature,
             max_tokens=max_tokens,
         )
-        return (response.choices[0].message.content or "").strip()
+        return {
+            "text": (response.choices[0].message.content or "").strip(),
+            "usage": build_usage_record(
+                provider="openai",
+                model=self.openai_model,
+                raw_usage=getattr(response, "usage", None),
+                operation="judge_generation",
+            ),
+            "provider": self.provider,
+            "model": self.openai_model,
+        }
 
     async def _generate_with_anthropic(
         self,
@@ -140,7 +161,7 @@ class LLMProviderAdapter:
         system_prompt: Optional[str],
         temperature: float,
         max_tokens: int,
-    ) -> str:
+    ) -> dict:
         client = self._get_anthropic_client()
         response = await client.messages.create(
             model=self.anthropic_model,
@@ -154,7 +175,17 @@ class LLMProviderAdapter:
         for block in response.content:
             if getattr(block, "type", "") == "text":
                 text_parts.append(getattr(block, "text", ""))
-        return "\n".join(part for part in text_parts if part).strip()
+        return {
+            "text": "\n".join(part for part in text_parts if part).strip(),
+            "usage": build_usage_record(
+                provider="anthropic",
+                model=self.anthropic_model,
+                raw_usage=getattr(response, "usage", None),
+                operation="judge_generation",
+            ),
+            "provider": self.provider,
+            "model": self.anthropic_model,
+        }
 
     async def _generate_with_gemini(
         self,
@@ -162,17 +193,27 @@ class LLMProviderAdapter:
         system_prompt: Optional[str],
         temperature: float,
         max_tokens: int,
-    ) -> str:
+    ) -> dict:
         client = self._get_gemini_client()
         merged_prompt = prompt if not system_prompt else f"System:\n{system_prompt}\n\nUser:\n{prompt}"
         _ = temperature, max_tokens
 
-        def _gemini_call() -> str:
+        def _gemini_call() -> dict:
             response = client.models.generate_content(
                 model=self.gemini_model,
                 contents=merged_prompt,
             )
-            return (getattr(response, "text", "") or "").strip()
+            return {
+                "text": (getattr(response, "text", "") or "").strip(),
+                "usage": build_usage_record(
+                    provider="gemini",
+                    model=self.gemini_model,
+                    raw_usage=getattr(response, "usage_metadata", None),
+                    operation="judge_generation",
+                ),
+                "provider": self.provider,
+                "model": self.gemini_model,
+            }
 
         return await asyncio.to_thread(_gemini_call)
 
@@ -182,10 +223,10 @@ class LLMProviderAdapter:
         system_prompt: Optional[str],
         temperature: float,
         max_tokens: int,
-    ) -> str:
+    ) -> dict:
         client = self._get_bedrock_client()
 
-        def _bedrock_call() -> str:
+        def _bedrock_call() -> dict:
             request = {
                 "modelId": self.bedrock_model,
                 "messages": [
@@ -213,17 +254,27 @@ class LLMProviderAdapter:
                 for block in content_blocks
                 if isinstance(block, dict) and block.get("text")
             ]
-            return "\n".join(text_parts).strip()
+            return {
+                "text": "\n".join(text_parts).strip(),
+                "usage": build_usage_record(
+                    provider="bedrock",
+                    model=self.bedrock_model,
+                    raw_usage=response.get("usage", {}),
+                    operation="judge_generation",
+                ),
+                "provider": self.provider,
+                "model": self.bedrock_model,
+            }
 
         return await asyncio.to_thread(_bedrock_call)
 
-    async def generate_text(
+    async def generate_text_with_usage(
         self,
         prompt: str,
         system_prompt: Optional[str] = None,
         temperature: float = 0.2,
         max_tokens: int = 800,
-    ) -> str:
+    ) -> dict:
         self._ensure_provider_supported()
 
         if self.provider != "bedrock" and not self._has_required_key():
@@ -261,3 +312,18 @@ class LLMProviderAdapter:
             temperature=temperature,
             max_tokens=max_tokens,
         )
+
+    async def generate_text(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        temperature: float = 0.2,
+        max_tokens: int = 800,
+    ) -> str:
+        payload = await self.generate_text_with_usage(
+            prompt=prompt,
+            system_prompt=system_prompt,
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
+        return payload["text"]
